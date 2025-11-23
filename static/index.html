@@ -310,10 +310,26 @@
           </div>
 
           <p class="small" style="margin-top: 18px">
-            This app does <strong>not</strong> record or store any audio yet.
-            The controls above simply exercise the backend and demonstrate how
-            results will be presented to a clinician or patient.
+            Use the controls below to simulate results or <strong>record a short
+            voice sample</strong> (for now we only send it to the backend and
+            confirm the upload path works).
           </p>
+
+          <div class="result-card" style="margin-top: 10px">
+            <div class="result-label">Voice sample (prototype)</div>
+            <div class="button-row" style="margin-top: 8px">
+              <button class="btn-secondary" id="btn-record">
+                Start recording
+              </button>
+              <button class="btn-secondary" id="btn-stop" disabled>
+                Stop &amp; send to backend
+              </button>
+            </div>
+            <div class="result-detail small" id="record-status">
+              We will use this later to extract features like jitter, shimmer
+              and noise ratios similar to the training dataset.
+            </div>
+          </div>
 
           <p class="small" style="margin-top: 10px">
             Always seek advice from a qualified healthcare professional. This
@@ -340,6 +356,12 @@
       const btnDemoLow = $("btn-demo-low");
       const btnDemoHigh = $("btn-demo-high");
       const btnDemoModel = $("btn-demo-model");
+      const btnRecord = $("btn-record");
+      const btnStop = $("btn-stop");
+      const recordStatus = $("record-status");
+
+      let mediaRecorder = null;
+      let recordedChunks = [];
 
       btnCheckHealth.addEventListener("click", async () => {
         healthStatus.textContent = "Checking API…";
@@ -424,6 +446,68 @@
         } catch (err) {
           riskDetail.innerHTML =
             '<span class="error-text">Could not reach /predict-demo. Check that the backend is running and the model is trained.</span>';
+        }
+      });
+
+      btnRecord.addEventListener("click", async () => {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          recordStatus.innerHTML =
+            '<span class="error-text">This browser does not support microphone recording.</span>';
+          return;
+        }
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+
+          recordedChunks = [];
+          mediaRecorder = new MediaRecorder(stream);
+
+          mediaRecorder.ondataavailable = (e) => {
+            if (e.data && e.data.size > 0) {
+              recordedChunks.push(e.data);
+            }
+          };
+
+          mediaRecorder.onstop = async () => {
+            const blob = new Blob(recordedChunks, { type: "audio/webm" });
+            const formData = new FormData();
+            formData.append("file", blob, "voice_sample.webm");
+
+            recordStatus.textContent =
+              "Uploading audio to backend (no analysis yet)…";
+
+            try {
+              const res = await fetch("/predict-from-audio", {
+                method: "POST",
+                body: formData,
+              });
+              if (!res.ok) throw new Error("Upload failed");
+              const data = await res.json();
+              recordStatus.textContent = data.note || "Upload succeeded.";
+            } catch (err) {
+              recordStatus.innerHTML =
+                '<span class="error-text">Could not upload audio to /predict-from-audio.</span>';
+            }
+          };
+
+          mediaRecorder.start();
+          recordStatus.textContent =
+            "Recording… speak for around 5–10 seconds, then click Stop.";
+          btnRecord.disabled = true;
+          btnStop.disabled = false;
+        } catch (err) {
+          recordStatus.innerHTML =
+            '<span class="error-text">Microphone permission denied or unavailable.</span>';
+        }
+      });
+
+      btnStop.addEventListener("click", () => {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+          mediaRecorder.stop();
+          btnRecord.disabled = false;
+          btnStop.disabled = true;
         }
       });
     </script>
