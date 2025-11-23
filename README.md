@@ -178,3 +178,19 @@ You can also explore all endpoints via the auto‑generated docs at `http://127.
   - Careful validation on real, diverse patient populations.
   - Regulatory review where applicable.
   - Clear communication with patients and clinicians about limitations and appropriate use.
+
+## 7. Data sources & citations
+
+- **UCI Parkinson’s voice dataset (tabular features)**
+  - Based on the classic Max Little / UCI dataset of sustained phonations and derived vocal features.
+  - Please see the UCI Machine Learning Repository entry for the Parkinson’s dataset for full attribution and licensing details.
+
+- **Sustained “aaa” audio (HC_AH / PD_AH under `AudioSample/`)**
+  - Source: open‑source Kaggle dataset by **Nutan Singh** (healthy controls and Parkinson’s patients producing sustained vowel phonations).
+  - Used here for research and educational purposes; see the original Kaggle page for the exact license and terms of use.
+
+- **Read text and spontaneous speech audio (`AudioSample/ReadText` and `AudioSample/SpontaneousDialogue`)**
+  - Prior, Fred; Virmani, Tuhin; Iyer, Anu; Larson‑Prior, Linda; Kemp, Aaron; Rahmatallah, Yasir; et al. (2023).
+    *Voice Samples for Patients with Parkinson’s Disease and Healthy Controls.* figshare. Dataset.
+    [`https://doi.org/10.6084/m9.figshare.23849127.v1`](https://doi.org/10.6084/m9.figshare.23849127.v1)
+  - Used in accordance with the dataset’s license; this project is strictly non‑clinical and for datathon / research demonstration only.
