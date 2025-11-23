@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>AuDisease – Parkinson's Voice Screening</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/modern-normalize/2.0.0/modern-normalize.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #050816;
+        --card: #0f172a;
+        --accent: #38bdf8;
+        --accent-soft: rgba(56, 189, 248, 0.2);
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --danger: #f97373;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        background: radial-gradient(circle at top, #0f172a, #020617 50%, #000);
+        color: var(--text);
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      .shell {
+        width: 100%;
+        max-width: 960px;
+        margin: auto;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+        gap: 24px;
+      }
+
+      @media (max-width: 768px) {
+        body {
+          padding: 16px;
+        }
+        .grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      .card {
+        background: linear-gradient(145deg, #020617, #020617) padding-box,
+          linear-gradient(145deg, rgba(148, 163, 184, 0.7), rgba(56, 189, 248, 0.9))
+            border-box;
+        border-radius: 18px;
+        border: 1px solid transparent;
+        padding: 20px 22px 22px;
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.9);
+      }
+
+      .title {
+        font-size: 1.7rem;
+        font-weight: 650;
+        letter-spacing: 0.03em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .pill {
+        border-radius: 999px;
+        padding: 3px 10px;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        border: 1px solid rgba(148, 163, 184, 0.6);
+        color: var(--muted);
+      }
+
+      .subtitle {
+        font-size: 0.9rem;
+        color: var(--muted);
+        margin-bottom: 18px;
+      }
+
+      .badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+
+      .badge {
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        font-size: 0.7rem;
+        color: var(--muted);
+      }
+
+      .section-title {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+        margin-bottom: 10px;
+      }
+
+      .health-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: rgba(34, 197, 94, 0.1);
+        color: #bbf7d0;
+        font-size: 0.75rem;
+        margin-bottom: 10px;
+      }
+
+      .health-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #22c55e;
+      }
+
+      .health-status {
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      button {
+        all: unset;
+        cursor: pointer;
+      }
+
+      .btn-primary {
+        padding: 9px 16px;
+        border-radius: 999px;
+        background: radial-gradient(circle at top left, #38bdf8, #0ea5e9);
+        color: #0b1120;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 12px 30px rgba(56, 189, 248, 0.4);
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 18px 40px rgba(56, 189, 248, 0.55);
+      }
+
+      .btn-secondary {
+        padding: 8px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.8);
+        color: var(--muted);
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .result-card {
+        border-radius: 14px;
+        padding: 14px 14px 12px;
+        background: radial-gradient(circle at top left, #0b1120, #020617);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        margin-top: 12px;
+      }
+
+      .result-label {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+
+      .result-value {
+        font-size: 1.2rem;
+        font-weight: 600;
+      }
+
+      .result-detail {
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.9);
+        overflow: hidden;
+        margin-top: 6px;
+      }
+
+      .progress-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #22c55e, #eab308, #f97316, #ef4444);
+        width: 0%;
+        transition: width 0.25s ease;
+      }
+
+      .small {
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+
+      .error-text {
+        color: var(--danger);
+        font-size: 0.8rem;
+        margin-top: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="grid">
+        <section class="card">
+          <div class="pill">Prototype • Voice-based screening</div>
+          <h1 class="title">AuDisease</h1>
+          <p class="subtitle">
+            This prototype uses patterns in the voice to help <strong>screen for
+            Parkinson's-related risk</strong> – inspired by research from Max
+            Little and others. It is a <strong>supporting tool</strong>, not a
+            medical diagnosis.
+          </p>
+
+          <div class="badge-row">
+            <span class="badge">FastAPI</span>
+            <span class="badge">Python 3.11</span>
+            <span class="badge">Scikit-learn</span>
+            <span class="badge">Voice biomarkers</span>
+          </div>
+
+          <div class="section-title">1. Check connection to the model</div>
+          <div class="health-chip" id="health-chip" style="display: none">
+            <span class="health-dot"></span>
+            <span id="health-label">API online</span>
+          </div>
+          <div class="health-status" id="health-status">
+            Click below to verify that the backend API is running.
+          </div>
+          <div class="button-row">
+            <button class="btn-primary" id="btn-check-health">
+              <span>Check API health</span>
+              <span>⟶</span>
+            </button>
+            <button class="btn-secondary" id="btn-view-features">
+              <span>Show input features</span>
+            </button>
+          </div>
+
+          <div class="result-card" id="features-card" style="display: none">
+            <div class="result-label">Current model inputs</div>
+            <div class="result-detail small" id="features-text"></div>
+          </div>
+
+          <p class="small" style="margin-top: 14px">
+            Next step: we will connect a short voice recording here, extract
+            the same vocal features used in the training dataset, and send them
+            securely to the model.
+          </p>
+        </section>
+
+        <aside class="card">
+          <div class="section-title">2. Screening result (demo)</div>
+
+          <div class="result-card">
+            <div class="result-label">Estimated Parkinson's risk</div>
+            <div class="result-value" id="risk-percent">–</div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="risk-bar"></div>
+            </div>
+            <div class="result-detail" id="risk-detail">
+              When we connect the audio pipeline, this panel will display the
+              model's probability estimate along with a short explanation.
+            </div>
+          </div>
+
+          <div class="button-row" style="margin-top: 18px">
+            <button class="btn-secondary" id="btn-demo-low">
+              Load low-risk example
+            </button>
+            <button class="btn-secondary" id="btn-demo-high">
+              Load higher-risk example
+            </button>
+            <button class="btn-primary" id="btn-demo-model">
+              <span>Run demo with real model</span>
+            </button>
+          </div>
+
+          <p class="small" style="margin-top: 18px">
+            This app does <strong>not</strong> record or store any audio yet.
+            The controls above simply exercise the backend and demonstrate how
+            results will be presented to a clinician or patient.
+          </p>
+
+          <p class="small" style="margin-top: 10px">
+            Always seek advice from a qualified healthcare professional. This
+            tool is for research and educational purposes only.
+          </p>
+        </aside>
+      </div>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+
+      const healthChip = $("health-chip");
+      const healthStatus = $("health-status");
+      const healthLabel = $("health-label");
+      const btnCheckHealth = $("btn-check-health");
+      const btnViewFeatures = $("btn-view-features");
+      const featuresCard = $("features-card");
+      const featuresText = $("features-text");
+
+      const riskPercent = $("risk-percent");
+      const riskBar = $("risk-bar");
+      const riskDetail = $("risk-detail");
+      const btnDemoLow = $("btn-demo-low");
+      const btnDemoHigh = $("btn-demo-high");
+      const btnDemoModel = $("btn-demo-model");
+
+      btnCheckHealth.addEventListener("click", async () => {
+        healthStatus.textContent = "Checking API…";
+        healthChip.style.display = "none";
+
+        try {
+          const res = await fetch("/health");
+          if (!res.ok) throw new Error("Health check failed");
+          const data = await res.json();
+          if (data.status === "ok") {
+            healthChip.style.display = "inline-flex";
+            healthLabel.textContent = "API online";
+            healthStatus.textContent =
+              "Backend is running and ready to accept requests.";
+          } else {
+            healthStatus.textContent =
+              "API responded, but health status was unexpected.";
+          }
+        } catch (err) {
+          healthStatus.innerHTML =
+            '<span class="error-text">Could not reach the API. Is Uvicorn running on port 8000?</span>';
+        }
+      });
+
+      btnViewFeatures.addEventListener("click", async () => {
+        featuresCard.style.display = "none";
+        featuresText.textContent = "Loading…";
+
+        try {
+          const res = await fetch("/feature-names");
+          if (!res.ok) throw new Error("Failed to load feature names");
+          const data = await res.json();
+          const names = data.feature_names || [];
+
+          featuresCard.style.display = "block";
+          if (names.length === 0) {
+            featuresText.textContent =
+              "No feature names found – check that the dataset can be loaded.";
+          } else {
+            featuresText.textContent = names.join(", ");
+          }
+        } catch (err) {
+          featuresCard.style.display = "block";
+          featuresText.innerHTML =
+            '<span class="error-text">Could not load feature names. Check the backend logs.</span>';
+        }
+      });
+
+      function setRiskDemo(prob) {
+        const pct = Math.round(prob * 100);
+        riskPercent.textContent = pct + "%";
+        riskBar.style.width = pct + "%";
+
+        if (prob < 0.25) {
+          riskDetail.textContent =
+            "Example of a lower-risk pattern. In the live model, this would correspond to a voice sample whose acoustic features look more similar to healthy controls in the dataset.";
+        } else if (prob < 0.6) {
+          riskDetail.textContent =
+            "Example of a moderate estimated risk. In practice, this would be discussed together with clinical history and other tests.";
+        } else {
+          riskDetail.textContent =
+            "Example of a higher-risk pattern. In a real deployment, this would be a signal to investigate further – not a diagnosis on its own.";
+        }
+      }
+
+      btnDemoLow.addEventListener("click", () => setRiskDemo(0.12));
+      btnDemoHigh.addEventListener("click", () => setRiskDemo(0.76));
+
+      btnDemoModel.addEventListener("click", async () => {
+        riskDetail.textContent = "Running demo prediction with the real model…";
+        try {
+          const res = await fetch("/predict-demo");
+          if (!res.ok) throw new Error("Demo prediction failed");
+          const data = await res.json();
+          const prob = data.probability_parkinsons;
+          if (typeof prob === "number") {
+            setRiskDemo(prob);
+          } else {
+            riskDetail.textContent =
+              "Demo endpoint responded, but probability was missing.";
+          }
+        } catch (err) {
+          riskDetail.innerHTML =
+            '<span class="error-text">Could not reach /predict-demo. Check that the backend is running and the model is trained.</span>';
+        }
+      });
+    </script>
+  </body>
+</html>
+
+

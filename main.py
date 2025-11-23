@@ -76,6 +76,35 @@ def feature_names():
     return {"feature_names": cols}
 
 
+@app.get("/predict-demo")
+def predict_demo():
+    """
+    Run the trained model on a simple demo input derived from the dataset.
+
+    We take the mean of each feature across the dataset as a single example
+    input, then return the model's predicted probability. This lets the
+    frontend exercise the real model without collecting audio yet.
+    """
+    df = load_raw_data()
+    df = _clean_column_names(df)
+    df = df.drop(columns=["name"])
+    feature_cols = [c for c in df.columns if c != "status"]
+    X = df[feature_cols]
+    x_mean = X.mean().to_numpy().reshape(1, -1)
+
+    model, scaler = _load_model_and_scaler()
+    x_scaled = scaler.transform(x_mean)
+
+    proba = model.predict_proba(x_scaled)[0, 1]
+    label = int(proba >= 0.5)
+
+    return {
+        "predicted_label": label,
+        "probability_parkinsons": float(proba),
+        "note": "Demo prediction using the average feature vector from the dataset.",
+    }
+
+
 @app.post("/predict")
 def predict(request: FeaturesRequest):
     """
