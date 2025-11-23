@@ -25,3 +25,19 @@ pip install -r requirements.txt
 ```
 
 At this point, the project is ready for the next step: adding a small script that loads the Parkinson’s dataset (`parkinsons.data`) and prepares a simple baseline machine learning model.
+
+## Quick check: can we load the dataset?
+
+With the virtual environment still active, you can run a small script to confirm that the dataset file is readable:
+
+```powershell
+python load_data.py
+```
+
+If everything is working, you should see:
+
+- A message showing how many **rows** and **columns** the dataset has.
+- The first few rows of the data.
+- Basic summary statistics (min, max, mean, etc.) for each numeric column.
+
+If this script runs without errors, we’re ready to move on to training a simple baseline model.
