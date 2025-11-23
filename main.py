@@ -7,6 +7,10 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
+from audio_features import (
+    extract_placeholder_features_from_audio_bytes,
+    get_feature_columns,
+)
 from data_pipeline import _clean_column_names, load_raw_data
 
 
@@ -69,10 +73,7 @@ def feature_names():
     This helps the frontend (or a non-programmer) see exactly what the
     current model input looks like.
     """
-    df = load_raw_data()
-    df = _clean_column_names(df)
-    df = df.drop(columns=["name"])
-    cols = [c for c in df.columns if c != "status"]
+    cols = get_feature_columns()
     return {"feature_names": cols}
 
 
@@ -131,23 +132,34 @@ def predict(request: FeaturesRequest):
 @app.post("/predict-from-audio")
 async def predict_from_audio(file: UploadFile = File(...)):
     """
-    Placeholder endpoint for future audio-based prediction.
+    Experimental endpoint for audio-based prediction.
 
-    Right now it only:
-    - Accepts an uploaded audio file (e.g. WAV/MP3)
-    - Checks that the content type looks like audio
-    - Returns a clear message that audio processing is not implemented yet
+    Current behaviour:
+    - Accepts an uploaded audio file (e.g. from the browser recorder)
+    - Maps it to a placeholder feature vector based on the dataset
+    - Runs the same Logistic Regression model and returns a probability
+
+    NOTE: This does not yet implement real signal processing; it keeps the
+    end-to-end path in place while we add proper audio features.
     """
     if not file.content_type.startswith("audio/"):
         raise HTTPException(status_code=400, detail="Please upload an audio file.")
 
-    # Read the file so we validate the upload works; we ignore contents for now.
-    await file.read()
+    raw_bytes = await file.read()
+
+    features, feature_cols = extract_placeholder_features_from_audio_bytes(raw_bytes)
+
+    model, scaler = _load_model_and_scaler()
+    x_scaled = scaler.transform(features.reshape(1, -1))
+
+    proba = model.predict_proba(x_scaled)[0, 1]
+    label = int(proba >= 0.5)
 
     return {
-        "predicted_label": None,
-        "probability_parkinsons": None,
-        "note": "Audio-based prediction is not implemented yet. "
-        "The endpoint is working and ready for feature extraction.",
+        "predicted_label": label,
+        "probability_parkinsons": float(proba),
+        "feature_names": feature_cols,
+        "note": "Experimental audio-based prediction using placeholder features "
+        "derived from the structured dataset. Do not use for diagnosis.",
     }
 
