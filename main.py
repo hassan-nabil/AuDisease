@@ -8,7 +8,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from audio_features import (
-    extract_placeholder_features_from_audio_bytes,
+    extract_audio_features_from_wav_bytes,
     get_feature_columns,
 )
 from data_pipeline import _clean_column_names, load_raw_data
@@ -33,6 +33,8 @@ def root():
 
 MODEL_PATH = Path("models/parkinsons_logreg.joblib")
 SCALER_PATH = Path("models/parkinsons_scaler.joblib")
+AUDIO_MODEL_PATH = Path("models/audio_pd_model.joblib")
+AUDIO_SCALER_PATH = Path("models/audio_pd_scaler.joblib")
 
 
 class FeaturesRequest(BaseModel):
@@ -54,6 +56,17 @@ def _load_model_and_scaler():
         )
     model = joblib.load(MODEL_PATH)
     scaler = joblib.load(SCALER_PATH)
+    return model, scaler
+
+
+def _load_audio_model_and_scaler():
+    if not AUDIO_MODEL_PATH.exists() or not AUDIO_SCALER_PATH.exists():
+        raise RuntimeError(
+            "Audio model or scaler file not found. "
+            "Run 'python train_audio_model.py' first."
+        )
+    model = joblib.load(AUDIO_MODEL_PATH)
+    scaler = joblib.load(AUDIO_SCALER_PATH)
     return model, scaler
 
 
@@ -135,21 +148,32 @@ async def predict_from_audio(file: UploadFile = File(...)):
     Experimental endpoint for audio-based prediction.
 
     Current behaviour:
-    - Accepts an uploaded audio file (e.g. from the browser recorder)
-    - Maps it to a placeholder feature vector based on the dataset
-    - Runs the same Logistic Regression model and returns a probability
-
-    NOTE: This does not yet implement real signal processing; it keeps the
-    end-to-end path in place while we add proper audio features.
+    - Accepts a WAV audio file (e.g. from the AudioSample dataset)
+    - Extracts basic audio features directly from the waveform
+    - Runs a RandomForest audio model trained on HC vs PD WAV files
     """
-    if not file.content_type.startswith("audio/"):
-        raise HTTPException(status_code=400, detail="Please upload an audio file.")
+    if file.content_type not in {
+        "audio/wav",
+        "audio/x-wav",
+        "audio/wave",
+        "audio/vnd.wave",
+    }:
+        raise HTTPException(
+            status_code=400,
+            detail="Please upload a WAV audio file (audio/wav).",
+        )
 
     raw_bytes = await file.read()
 
-    features, feature_cols = extract_placeholder_features_from_audio_bytes(raw_bytes)
+    try:
+        features = extract_audio_features_from_wav_bytes(raw_bytes)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Could not read WAV data: {exc}",
+        ) from exc
 
-    model, scaler = _load_model_and_scaler()
+    model, scaler = _load_audio_model_and_scaler()
     x_scaled = scaler.transform(features.reshape(1, -1))
 
     proba = model.predict_proba(x_scaled)[0, 1]
@@ -158,8 +182,7 @@ async def predict_from_audio(file: UploadFile = File(...)):
     return {
         "predicted_label": label,
         "probability_parkinsons": float(proba),
-        "feature_names": feature_cols,
-        "note": "Experimental audio-based prediction using placeholder features "
-        "derived from the structured dataset. Do not use for diagnosis.",
+        "note": "Audio-based PD vs HC probability from a model trained on the "
+        "AudioSample WAV dataset. Do not use for diagnosis.",
     }
 
