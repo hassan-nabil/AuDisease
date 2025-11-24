@@ -59,7 +59,7 @@ These steps assume you are in the `AuDisease` folder (where this README lives).
 ### 3.1 Create and activate the virtual environment
 
 ```powershell
-python -m venv .venv
+py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
